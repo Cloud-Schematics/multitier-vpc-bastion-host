@@ -1,0 +1,18 @@
+#cloud-config
+
+# Install security updates on Centos from IBM Cloud private mirror (no public access)
+# SSH max sessions optimised for Ansible usage
+# Minimal best practice SSH config    
+
+runcmd:
+  - yum --security update
+  - sed -i "s/#MaxSessions 10/MaxSessions 50/" /etc/ssh/sshd_config
+  - sed -i "s/X11Forwarding yes/X11Forwarding no/" /etc/ssh/sshd_config
+  - sed -i "s/PermitRootLogin yes/PermitRootLogin prohibit-password/" /etc/ssh/sshd_config
+  - sed -i "s/#AllowAgentForwarding yes/AllowAgentForwarding no/" /etc/ssh/sshd_config
+  - echo "MaxStartups 50:30:80"  >> /etc/ssh/sshd_config
+  - echo "AllowStreamLocalForwarding no"  >> /etc/ssh/sshd_config
+  - echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
+  - echo 'UsePAM yes' >> /etc/ssh/sshd_config
+  - echo 'AuthenticationMethods publickey' >> /etc/ssh/sshd_config
+  - service sshd restart
