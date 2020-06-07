@@ -28,7 +28,7 @@ resource "ibm_is_instance" "frontend-server" {
   zone           = "${var.ibm_region}-${count.index % 3 + 1}"
   resource_group = var.ibm_is_resource_group_id
   keys           = [var.ibm_is_ssh_key_id]
-  tags           = ["schematics:group:frontend"]
+  tags           = ["ansible:group:frontend"]
   #user_data      = data.template_cloudinit_config.app_userdata.rendered
 }
 
