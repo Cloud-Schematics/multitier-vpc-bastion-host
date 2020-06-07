@@ -29,7 +29,7 @@ resource "ibm_is_instance" "backend-server" {
   resource_group = var.ibm_is_resource_group_id
   keys           = [var.ibm_is_ssh_key_id]
   user_data      = data.template_cloudinit_config.app_userdata.rendered
-  tags           = ["ans_group:backend"]
+  tags           = ["schematics:group:backend"]
 }
 
 

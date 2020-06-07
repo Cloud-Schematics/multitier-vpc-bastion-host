@@ -31,7 +31,7 @@ resource "ibm_is_instance" "bastion" {
   resource_group = var.ibm_is_resource_group_id
   keys           = [var.ssh_key_id]
   user_data      = file("${path.module}/bastion_config.yml")
-  tags           = ["ans_group:bastion"]
+  tags           = ["schematics:bastion"]
 }
 
 resource "ibm_is_floating_ip" "bastion" {
