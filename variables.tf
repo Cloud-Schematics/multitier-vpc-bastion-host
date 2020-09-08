@@ -21,12 +21,6 @@ variable "resource_group_name" {
   default     = "Default"
 }
 
-# #Only tested with Gen2. Gen1 requires changes to images, profile names and some VPC resources 
-# variable "generation" {
-#   description = "VPC generation. Only tested with VPC Gen2"
-#   default     = 2
-# }
-
 # unique name for the VPC in the account 
 variable "vpc_name" {
   description = "Name of vpc"
@@ -43,7 +37,7 @@ variable "vpc_name" {
 # from remove-exec or Redhat Ansible running under Schematics 
 
 variable "ssh_source_cidr_override" {
-  type        = list
+  type        = list(any)
   description = "Override CIDR range that is allowed to ssh to the bastion"
   default     = ["0.0.0.0/0"]
 }

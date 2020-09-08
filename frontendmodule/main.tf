@@ -13,6 +13,15 @@
 ##############################################################################
 
 
+terraform {
+  required_providers {
+    ibm = {
+      source  = "IBM-Cloud/ibm"
+      version = "~> 1.33.0"
+    }
+  }
+}
+
 resource "ibm_is_instance" "frontend-server" {
   count   = var.frontend_count
   name    = "${var.unique_id}-frontend-vsi-${count.index + 1}"
@@ -40,10 +49,11 @@ resource "ibm_is_instance" "frontend-server" {
 
 
 resource "ibm_is_lb" "webapptier-lb" {
-  name           = "webapptier"
-  type           = "public"
-  subnets        = toset(var.subnet_ids)
-  resource_group = var.ibm_is_resource_group_id
+  name            = "webapptier"
+  type            = "public"
+  subnets         = toset(var.subnet_ids)
+  resource_group  = var.ibm_is_resource_group_id
+  security_groups = [ibm_is_security_group.loadbalancer.id]
 
   timeouts {
     create = "15m"
@@ -85,8 +95,32 @@ resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
 }
 
 
+# this is the SG applied to the loadbalancer instances
+resource "ibm_is_security_group" "loadbalancer" {
+  name           = "${var.unique_id}-loadbalancer-sg"
+  vpc            = var.ibm_is_vpc_id
+  resource_group = var.ibm_is_resource_group_id
+}
 
+resource "ibm_is_security_group_rule" "loadbalancer_access_inbound" {
+  group     = ibm_is_security_group.loadbalancer.id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  tcp {
+    port_min = 80
+    port_max = 80
+  }
+}
 
+resource "ibm_is_security_group_rule" "loadbalancer_access_egress" {
+  group     = ibm_is_security_group.loadbalancer.id
+  direction = "outbound"
+  remote    = "0.0.0.0/0"
+  tcp {
+    port_min = 1
+    port_max = 65535
+  }
+}
 
 # this is the SG applied to the frontend instances
 resource "ibm_is_security_group" "frontend" {

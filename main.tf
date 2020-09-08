@@ -1,10 +1,18 @@
 
+terraform {
+  required_version = ">= 1.0.0, < 2.0.0"
+  required_providers {
+    ibm = {
+      source  = "IBM-Cloud/ibm"
+      version = "~> 1.33.0"
+    }
+  }
+}
+
 # provider block required with Schematics to set VPC region
 provider "ibm" {
   region = var.ibm_region
   #ibmcloud_api_key = var.ibmcloud_api_key
-  generation = local.generation
-  version    = "~> 1.4"
 }
 
 data "ibm_resource_group" "all_rg" {
@@ -12,7 +20,6 @@ data "ibm_resource_group" "all_rg" {
 }
 
 locals {
-  generation     = 2
   frontend_count = 2
   backend_count  = 1
 }
@@ -33,7 +40,7 @@ locals {
   geo    = substr(local.region, 0, 2)
   schematics_ssh_access_map = {
     us = ["169.44.0.0/14", "169.60.0.0/14"],
-    eu = ["0.0.0.0/0", "0.0.0.0/0"],
+    eu = ["158.175.0.0/16", "158.176.0.0/15", "141.125.75.80/28", "161.156.139.192/28", "149.81.103.128/28"],
   }
   schematics_ssh_access = lookup(local.schematics_ssh_access_map, local.geo, ["0.0.0.0/0"])
   bastion_ingress_cidr  = var.ssh_source_cidr_override[0] != "0.0.0.0/0" ? var.ssh_source_cidr_override : local.schematics_ssh_access
@@ -44,7 +51,6 @@ module "vpc" {
   source               = "./vpc"
   ibm_region           = var.ibm_region
   resource_group_name  = var.resource_group_name
-  generation           = local.generation
   unique_id            = var.vpc_name
   frontend_count       = local.frontend_count
   frontend_cidr_blocks = local.frontend_cidr_blocks

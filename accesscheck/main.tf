@@ -1,3 +1,14 @@
+terraform {
+  required_providers {
+    ibm = {
+      source  = "IBM-Cloud/ibm"
+      version = "~> 1.33.0"
+    }
+  }
+}
+
+
+
 locals {
   target_count = var.ssh_accesscheck ? length(var.target_hosts) : 0
 }

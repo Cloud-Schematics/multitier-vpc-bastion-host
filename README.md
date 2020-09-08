@@ -115,8 +115,8 @@ defined in the site.yml playbook file.
 
 |  **Name**                  | **Version** |
 |  --------------------------| -------------|
-|  terraform                 | ~> 0.12 |
-|  terraform_provider_ibm    | ~> 1.5.2 |
+|  terraform                 | ~> 1.0 |
+|  terraform_provider_ibm    | ~> 1.33 |
 
 
 ## Inputs
@@ -168,7 +168,7 @@ defined in the site.yml playbook file.
        - Click Create to create your workspace.
     2.  On the workspace **Settings** page, enter the URL of this example in
     the Schematics examples Github repository.
-     - Select the Terraform version: Terraform 0.12.
+     - Select the Terraform version: Terraform 1.0 or higher
      - Click **Save template information**.
      - In the **Input variables** section, review the default input
         variables and provide alternatives if desired. The only
