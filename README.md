@@ -16,7 +16,7 @@ that may need be implemented before it can be used.
 The figure here illustrates the configuration of the VPC deployed by
 this example. For a detailed explanation of bastion host, ACL and
 security group configuration, please see the IBM Developer article
-[Secure VPC access with a bastion host and Terraform]().
+[Secure VPC access with a bastion host and Terraform](https://developer.ibm.com/articles/secure-vpc-access-with-a-bastion-host-and-terraform).
 
 ![Multi-tier VPC with bastion host](images/multitiervpc.png)
 
