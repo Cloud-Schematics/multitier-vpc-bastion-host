@@ -73,7 +73,7 @@ module "bastion" {
   destination_sgs          = [module.frontend.security_group_id, module.backend.security_group_id]
   # destination_sg          = [module.frontend.security_group_id, module.backend.security_group_id]
   # vsi_profile             = "cx2-2x4"
-  # image_name              = "ibm-centos-7-6-minimal-amd64-1"
+  # image_name              = "ibm-centos-8-3-minimal-amd64-3"
   ssh_key_id = data.ibm_is_ssh_key.sshkey.id
 
 }
