@@ -22,7 +22,7 @@ variable "profile" {
 variable "ibm_is_image_id" {
 }
 
-# SSH key for frontend webservers. 
+# SSH key for blue webservers. 
 variable "ibm_is_ssh_key_id" {
 }
 
@@ -30,22 +30,22 @@ variable "ibm_is_ssh_key_id" {
 variable "subnet_ids" {
 }
 
-# bastion sg requiring access to frontend security group
+# bastion sg requiring access to blue security group
 variable "bastion_remote_sg_id" {
 }
 
-# bastion subnet CIDR requiring access to frontend subnets 
+# bastion subnet CIDR requiring access to blue subnets 
 variable "bastion_subnet_CIDR" {
 }
 
-variable "app_backend_sg_id" {
+variable "app_green_sg_id" {
 }
 
 # Allowable CIDRs of public repos from which Ansible can deploy code
 variable "pub_repo_egress_cidr" {
 }
 
-variable "frontend_count" {
+variable "blue_count" {
   description = "number of front end zones"
   default     = 1
 }

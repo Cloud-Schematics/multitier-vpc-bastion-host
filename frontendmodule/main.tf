@@ -1,34 +1,34 @@
 ##############################################################################
-# Sample module to deploy a 'frontend' webserver VSI and security group  
+# Sample module to deploy a 'blue' webserver VSI and security group  
 # No NACL is defined. As no floating (public) IPs are defined # Security Group 
 # configuration by itself is considered sufficient to protect access to the webserver.
 # Subnets are defined in the VPC module. 
 #
 # Redhat Ansible usage is enabled by the addition of VSI tags. All Ansible related VSI 
 # tags are prefixed with "ans_group:" followed by the group name.   '
-# tags = ["ans_group:backend"]'  
+# tags = ["ans_group:green"]'  
 # Correct specification of tags is essential for operation of the Ansible dynamic inventory
 # script used to pass host information to Ansible. The tags here should match the roles
 # defined in the site.yml playbook file. 
 ##############################################################################
 
 
-resource "ibm_is_instance" "frontend-server" {
-  count   = var.frontend_count
-  name    = "${var.unique_id}-frontend-vsi-${count.index + 1}"
+resource "ibm_is_instance" "blue-server" {
+  count   = var.blue_count
+  name    = "${var.unique_id}-blue-vsi-${count.index + 1}"
   image   = var.ibm_is_image_id
   profile = var.profile
 
   primary_network_interface {
     subnet          = var.subnet_ids[count.index]
-    security_groups = [ibm_is_security_group.frontend.id]
+    security_groups = [ibm_is_security_group.blue.id]
   }
 
   vpc            = var.ibm_is_vpc_id
   zone           = "${var.ibm_region}-${count.index % 3 + 1}"
   resource_group = var.ibm_is_resource_group_id
   keys           = [var.ibm_is_ssh_key_id]
-  tags           = ["schematics:group:frontend"]
+  tags           = ["schematics:group:blue"]
   #user_data      = data.template_cloudinit_config.app_userdata.rendered
 }
 
@@ -39,8 +39,8 @@ resource "ibm_is_instance" "frontend-server" {
 ##############################################################################
 
 
-resource "ibm_is_lb" "webapptier-lb" {
-  name           = "webapptier"
+resource "ibm_is_lb" "vsi-blue-green-lb" {
+  name           = "vsi-blue-green"
   type           = "public"
   subnets        = toset(var.subnet_ids)
   resource_group = var.ibm_is_resource_group_id
@@ -54,17 +54,17 @@ resource "ibm_is_lb" "webapptier-lb" {
 }
 
 
-resource "ibm_is_lb_listener" "webapptier-lb-listener" {
-  lb           = ibm_is_lb.webapptier-lb.id
+resource "ibm_is_lb_listener" "vsi-blue-green-lb-listener" {
+  lb           = ibm_is_lb.vsi-blue-green-lb.id
   port         = "80"
   protocol     = "http"
-  default_pool = element(split("/", ibm_is_lb_pool.webapptier-lb-pool.id), 1)
-  depends_on   = [ibm_is_lb_pool.webapptier-lb-pool]
+  default_pool = element(split("/", ibm_is_lb_pool.vsi-blue-green-lb-pool.id), 1)
+  depends_on   = [ibm_is_lb_pool.vsi-blue-green-lb-pool]
 }
 
-resource "ibm_is_lb_pool" "webapptier-lb-pool" {
-  lb                 = ibm_is_lb.webapptier-lb.id
-  name               = "webapptier-lb-pool"
+resource "ibm_is_lb_pool" "vsi-blue-green-lb-pool" {
+  lb                 = ibm_is_lb.vsi-blue-green-lb.id
+  name               = "vsi-blue-green-lb-pool"
   protocol           = "http"
   algorithm          = "round_robin"
   health_delay       = "5"
@@ -72,25 +72,25 @@ resource "ibm_is_lb_pool" "webapptier-lb-pool" {
   health_timeout     = "2"
   health_type        = "http"
   health_monitor_url = "/"
-  depends_on         = [ibm_is_lb.webapptier-lb]
+  depends_on         = [ibm_is_lb.vsi-blue-green-lb]
 }
 
-resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
-  count          = var.frontend_count
-  lb             = ibm_is_lb.webapptier-lb.id
-  pool           = element(split("/", ibm_is_lb_pool.webapptier-lb-pool.id), 1)
+resource "ibm_is_lb_pool_member" "vsi-blue-green-lb-pool-member-zone1" {
+  count          = var.blue_count
+  lb             = ibm_is_lb.vsi-blue-green-lb.id
+  pool           = element(split("/", ibm_is_lb_pool.vsi-blue-green-lb-pool.id), 1)
   port           = "8080"
-  target_address = ibm_is_instance.frontend-server[count.index].primary_network_interface[0].primary_ipv4_address
-  depends_on     = [ibm_is_lb_pool.webapptier-lb-pool]
+  target_address = ibm_is_instance.blue-server[count.index].primary_network_interface[0].primary_ipv4_address
+  depends_on     = [ibm_is_lb_pool.vsi-blue-green-lb-pool]
 }
 
 
 
 
 
-# this is the SG applied to the frontend instances
-resource "ibm_is_security_group" "frontend" {
-  name           = "${var.unique_id}-frontend-sg"
+# this is the SG applied to the blue instances
+resource "ibm_is_security_group" "blue" {
+  name           = "${var.unique_id}-blue-sg"
   vpc            = var.ibm_is_vpc_id
   resource_group = var.ibm_is_resource_group_id
 }
@@ -101,11 +101,11 @@ locals {
 
 
   sg_rules = [
-    ["outbound", var.app_backend_sg_id, "tcp", 27017, 27017],
+    ["outbound", var.app_green_sg_id, "tcp", 27017, 27017],
     ["inbound", var.bastion_remote_sg_id, "tcp", 22, 22],
-    ["outbound", "161.26.0.0/24", "tcp", 443, 443],
-    ["outbound", "161.26.0.0/24", "tcp", 80, 80],
-    ["outbound", "161.26.0.0/24", "udp", 53, 53],
+    ["outbound", "0.0.0.0/24", "tcp", 443, 443],
+    ["outbound", "0.0.0.0/24", "tcp", 80, 80],
+    ["outbound", "0.0.0.0/24", "udp", 53, 53],
 
     ["outbound", var.pub_repo_egress_cidr, "tcp", 80, 80],
     ["outbound", var.pub_repo_egress_cidr, "tcp", 443, 443],
@@ -119,9 +119,9 @@ locals {
 }
 
 
-resource "ibm_is_security_group_rule" "frontend_access" {
+resource "ibm_is_security_group_rule" "blue_access" {
   count     = length(local.sg_mappedrules)
-  group     = ibm_is_security_group.frontend.id
+  group     = ibm_is_security_group.blue.id
   direction = (local.sg_mappedrules[count.index]).direction
   remote    = (local.sg_mappedrules[count.index]).remote
   dynamic "tcp" {

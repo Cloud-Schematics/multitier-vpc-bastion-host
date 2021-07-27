@@ -32,21 +32,21 @@ resource "ibm_is_vpc" "vpc" {
 
 
 
-resource "ibm_is_vpc_address_prefix" "frontend_subnet_prefix" {
-  count = var.frontend_count
-  name  = "${var.unique_id}-frontend-prefix-zone-${count.index + 1}"
+resource "ibm_is_vpc_address_prefix" "blue_subnet_prefix" {
+  count = var.blue_count
+  name  = "${var.unique_id}-blue-prefix-zone-${count.index + 1}"
   zone  = "${var.ibm_region}-${count.index % 3 + 1}"
   vpc   = ibm_is_vpc.vpc.id
-  cidr  = var.frontend_cidr_blocks[count.index]
+  cidr  = var.blue_cidr_blocks[count.index]
 
 }
 
-resource "ibm_is_vpc_address_prefix" "backend_subnet_prefix" {
-  count = var.backend_count
-  name  = "${var.unique_id}-backend-prefix-zone-${count.index + 1}"
+resource "ibm_is_vpc_address_prefix" "green_subnet_prefix" {
+  count = var.green_count
+  name  = "${var.unique_id}-green-prefix-zone-${count.index + 1}"
   zone  = "${var.ibm_region}-${count.index % 3 + 1}"
   vpc   = ibm_is_vpc.vpc.id
-  cidr  = var.backend_cidr_blocks[count.index]
+  cidr  = var.green_cidr_blocks[count.index]
 }
 
 ##############################################################################
@@ -59,27 +59,27 @@ resource "ibm_is_vpc_address_prefix" "backend_subnet_prefix" {
 
 
 # Increase count to create subnets in all zones
-resource "ibm_is_subnet" "frontend_subnet" {
-  count           = var.frontend_count
-  name            = "${var.unique_id}-frontend-subnet-${count.index + 1}"
+resource "ibm_is_subnet" "blue_subnet" {
+  count           = var.blue_count
+  name            = "${var.unique_id}-blue-subnet-${count.index + 1}"
   vpc             = ibm_is_vpc.vpc.id
   zone            = "${var.ibm_region}-${count.index % 3 + 1}"
-  ipv4_cidr_block = var.frontend_cidr_blocks[count.index]
+  ipv4_cidr_block = var.blue_cidr_blocks[count.index]
   #network_acl     = "${ibm_is_network_acl.multizone_acl.id}"
   public_gateway = ibm_is_public_gateway.repo_gateway[count.index].id
-  depends_on     = [ibm_is_vpc_address_prefix.frontend_subnet_prefix]
+  depends_on     = [ibm_is_vpc_address_prefix.blue_subnet_prefix]
 }
 
 # Increase count to create subnets in all zones
-resource "ibm_is_subnet" "backend_subnet" {
-  count           = var.backend_count
-  name            = "${var.unique_id}-backend-subnet-${count.index + 1}"
+resource "ibm_is_subnet" "green_subnet" {
+  count           = var.green_count
+  name            = "${var.unique_id}-green-subnet-${count.index + 1}"
   vpc             = ibm_is_vpc.vpc.id
   zone            = "${var.ibm_region}-${count.index % 3 + 1}"
-  ipv4_cidr_block = var.backend_cidr_blocks[count.index]
+  ipv4_cidr_block = var.green_cidr_blocks[count.index]
   #network_acl     = "${ibm_is_network_acl.multizone_acl.id}"
   public_gateway = ibm_is_public_gateway.repo_gateway[count.index].id
-  depends_on     = [ibm_is_vpc_address_prefix.backend_subnet_prefix]
+  depends_on     = [ibm_is_vpc_address_prefix.green_subnet_prefix]
 }
 
 
@@ -88,7 +88,7 @@ resource "ibm_is_subnet" "backend_subnet" {
 
 # Increase count to create gateways in all zones
 resource "ibm_is_public_gateway" "repo_gateway" {
-  count = var.frontend_count
+  count = var.blue_count
   name  = "${var.unique_id}-public-gtw-${count.index}"
   vpc   = ibm_is_vpc.vpc.id
   zone  = "${var.ibm_region}-${count.index % 3 + 1}"

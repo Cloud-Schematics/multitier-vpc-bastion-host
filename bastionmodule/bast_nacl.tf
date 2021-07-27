@@ -34,7 +34,7 @@ locals {
   sourcerules = concat(local.sourceinboundrules, local.sourceoutboundrules)
 }
 
-# output "list_frontend" {
+# output "list_blue" {
 #   value = local.destrules
 # }
 
@@ -49,12 +49,10 @@ locals {
   # base rules for maintenance repo's, DNS and Deny all. 
   # note deny rules explicitly defined as tcp/udp as 'all' not supported when this was written
   baserules = [
-    ["allow", "161.26.0.0/16", "0.0.0.0/0", "inbound", "tcp", 80, 80, 1024, 65535],
-    ["allow", "161.26.0.0/16", "0.0.0.0/0", "inbound", "udp", 53, 53, 1024, 65535],
-    ["allow", "0.0.0.0/0", "161.26.0.0/16", "outbound", "tcp", 1024, 65535, 80, 80],
-    ["allow", "0.0.0.0/0", "161.26.0.0/16", "outbound", "udp", 1024, 65535, 53, 53],
-    #["allow", "166.9.0.0/16", "0.0.0.0/0", "inbound", "tcp", 1, 65535, 1024, 65535],
-    #["allow", "0.0.0.0/0", "166.9.0.0/16", "outbound", "tcp", 1024, 65535, 1, 65535],
+    ["allow", "0.0.0.0/0", "0.0.0.0/0", "inbound", "tcp", 80, 80, 1024, 65535],
+    ["allow", "0.0.0.0/0", "0.0.0.0/0", "inbound", "udp", 53, 53, 1024, 65535],
+    ["allow", "0.0.0.0/0", "0.0.0.0/0", "outbound", "tcp", 1024, 65535, 80, 80],
+    ["allow", "0.0.0.0/0", "0.0.0.0/0", "outbound", "udp", 1024, 65535, 53, 53],
     ["deny", "0.0.0.0/0", "0.0.0.0/0", "inbound", "all", 1, 65535, 1, 65535],
     ["deny", "0.0.0.0/0", "0.0.0.0/0", "outbound", "all", 1, 65535, 1, 65535],
   ]

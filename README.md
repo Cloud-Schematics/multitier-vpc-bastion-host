@@ -21,9 +21,9 @@ security group configuration, please see the IBM Developer article
 ![Multi-tier VPC with bastion host](images/multitiervpc.png)
 
 The example deploys a three tier application environment, with a public facing
-load balancer, a frontend app tier for application webservers and a backend tier For
-a database server. The two frontend servers are deployed across multiple MZR zones to
-demonstrate scaling and HA resilience. The backend tier can be optionally provisioned with
+load balancer, a blue app tier for application webservers and a green tier For
+a database server. The two blue servers are deployed across multiple MZR zones to
+demonstrate scaling and HA resilience. The green tier can be optionally provisioned with
 multiple VSIs across zones.
 
 Public gateways and DNS access is configured to support deployment of opensource application
@@ -45,9 +45,9 @@ the public or private networks to the app VSIs is denied.
 VPC Security Group and network ACL rules are applied to:
 - Allow only inbound SSH access to the bastion host from Schematics
 - Allow only inbound SSH access to the app VSIs from the bastion host
-- Allow only inbound HTTP access on port 8080 from the public load-balancer to the frontend VSIs
-- Allow only inbound Mongodb access on port 27017 from the frontend VSIs to the backend VSIs
-- Outbound access is enabled for both frontend and backend VSIs for DNS and software installation
+- Allow only inbound HTTP access on port 8080 from the public load-balancer to the blue VSIs
+- Allow only inbound Mongodb access on port 27017 from the blue VSIs to the green VSIs
+- Outbound access is enabled for both blue and green VSIs for DNS and software installation
 - All other inbound and outbound traffic to the bastion host and app VSIs is denied by both ACLs and Security groups
 
 To mitigate the security risks of SSH connections over the public network to the
@@ -72,9 +72,7 @@ optimisation to support software provisioning with Ansible.
   - sed -i "s/#MaxSessions 10/MaxSessions 50/" /etc/ssh/sshd_config
   - sed -i "s/X11Forwarding yes/X11Forwarding no/" /etc/ssh/sshd_config
   - sed -i "s/PermitRootLogin yes/PermitRootLogin prohibit-password/" /etc/ssh/sshd_config
-  - sed -i "s/#AllowAgentForwarding yes/AllowAgentForwarding no/" /etc/ssh/sshd_config
   - echo "MaxStartups 50:30:80"  >> /etc/ssh/sshd_config
-  - echo "AllowStreamLocalForwarding no"  >> /etc/ssh/sshd_config
   - echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
   - echo 'UsePAM yes' >> /etc/ssh/sshd_config
   - echo 'AuthenticationMethods publickey' >> /etc/ssh/sshd_config
@@ -101,10 +99,10 @@ charges.
 Support for software installation and configuration with Redhat Ansible is enabled by the addition
 of VSI tags. The Ansible group assignment of VSIs is determined by the setting of IBM Cloud resource
 tags on the `ibm_is_instance` resource statements. Tags are prefixed with "ans_group:" followed by the group name.   '
-`tags = ["ans_group:backend"]`. A VSI can be assigned to multiple groups, by the addition of multiple `ans_group:`
+`tags = ["ans_group:green"]`. A VSI can be assigned to multiple groups, by the addition of multiple `ans_group:`
 prefixed tags.
 
-In this example VSI's are grouped by the Terraform module (frontend, backend) used for deployment. This ensures the match between the VPC network configuration of a VSI and the Ansible role deployed on the VSI.
+In this example VSI's are grouped by the Terraform module (blue, green) used for deployment. This ensures the match between the VPC network configuration of a VSI and the Ansible role deployed on the VSI.
 
 Correct specification of tags is essential for operation of the Ansible dynamic inventory
 script used by Ansible to retrieve host information from the Terraform State file. The tags here should match the roles
@@ -128,9 +126,9 @@ defined in the site.yml playbook file.
 |  resource_group_name | Name of IBM Cloud Resource Group used for all VPC resources | string | | "Default" |  |
 |  ssh_source_cidr_override |  User specified list of CIDR ranges requiring SSH access. When used with Schematics the default is to allow access only from Schematics, otherwise set to "0.0.0.0/0" | list(string) | | {{Schematics}}  |   |
 |  bastion_cidr | CIDR range for bastion subnets  |  string  | | "172.22.192.0/20"  |   |
-|  frontend_cidr |  List of CIDRs the bastion is to route SSH traffic to |  list(string) | | "172.16.0.0/20"  |   |
-|  backend_cidr" |  List of CIDRs the bastion is to route SSH traffic to   | list(string) | | "172.17.0.0/20"  |   |
-|  vsi_profile | Profile for VSIs deployed in frontend and backend  | string  | | "cx2-2x4" |  |
+|  blue_cidr |  List of CIDRs the bastion is to route SSH traffic to |  list(string) | | "172.16.0.0/20"  |   |
+|  green_cidr" |  List of CIDRs the bastion is to route SSH traffic to   | list(string) | | "172.17.0.0/20"  |   |
+|  vsi_profile | Profile for VSIs deployed in blue and green  | string  | | "cx2-2x4" |  |
 |  image_name |  OS image for VSI deployments. Only tested with Centos | string | | "ibm-centos-7-6-minimal-amd64-1" |  |
 |  ssh_key_name | Name given to public SSH key uploaded to IBM Cloud for VSI access |  string |  ✓   |    |    |     
 |  ssh_accesscheck | Set to "true' if access to VSIs via SSH is to be validated |  string | | "false" |  |
@@ -141,8 +139,8 @@ defined in the site.yml playbook file.
 |  **name**      |    **description**  |
 |  --------------------------------------- | ------------------------------------------- |
 |  bastion_ip_addresses             |     Public bastion IP address
-|  frontend_server_host_ip_addresses |  List of frontend VSI private IP addresses |
-|  backend_server_host_ip_addresses  |  List of backend VSI private IP addresses |
+|  blue_server_host_ip_addresses |  List of blue VSI private IP addresses |
+|  green_server_host_ip_addresses  |  List of green VSI private IP addresses |
 
 ## Instructions
 
@@ -184,21 +182,21 @@ defined in the site.yml playbook file.
     provisioning, modification, or deletion process.
 
 The output of the Schematics Apply Plan will list the public IP address
-of the bastion host and the frontend and backend app servers. These can
+of the bastion host and the blue and green app servers. These can
 be used for input to subsequent software provisioning templates using
 remote-exec or Redhat Ansible.
 
 ```
 Outputs:
 
-frontend_server_host_ip_addresses = [
+blue_server_host_ip_addresses = [
   [
     "172.16.0.5",
     "172.16.2.5",
   ],
 ]
 
-backend_server_host_ip_addresses = [
+green_server_host_ip_addresses = [
   [
     "172.17.0.4",
   ],
@@ -226,7 +224,7 @@ access the VSIs the Apply will fail with a `timeout` message.
 To validate that access is denied from other IP addresses, the following
 SSH command can be used from a local workstation. Copy and paste the
 command into a terminal session, inserting the returned values for the
-bastion IP and one of the frontend VSIs and the path to the file
+bastion IP and one of the blue VSIs and the path to the file
 containing the private SSH key.
 
 ```

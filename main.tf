@@ -12,9 +12,9 @@ data "ibm_resource_group" "all_rg" {
 }
 
 locals {
-  generation     = 2
-  frontend_count = 2
-  backend_count  = 1
+  generation = 2
+  blue_count = 2
+  green_count  = 2
 }
 
 
@@ -46,16 +46,16 @@ module "vpc" {
   resource_group_name  = var.resource_group_name
   generation           = local.generation
   unique_id            = var.vpc_name
-  frontend_count       = local.frontend_count
-  frontend_cidr_blocks = local.frontend_cidr_blocks
-  backend_count        = local.backend_count
-  backend_cidr_blocks  = local.backend_cidr_blocks
+  blue_count       = local.blue_count
+  blue_cidr_blocks = local.blue_cidr_blocks
+  green_count        = local.green_count
+  green_cidr_blocks  = local.green_cidr_blocks
 }
 
 locals {
   # bastion_cidr_blocks  = [cidrsubnet(var.bastion_cidr, 4, 0), cidrsubnet(var.bastion_cidr, 4, 2), cidrsubnet(var.bastion_cidr, 4, 4)]
-  frontend_cidr_blocks = [cidrsubnet(var.frontend_cidr, 4, 0), cidrsubnet(var.frontend_cidr, 4, 2), cidrsubnet(var.frontend_cidr, 4, 4)]
-  backend_cidr_blocks  = [cidrsubnet(var.backend_cidr, 4, 0), cidrsubnet(var.backend_cidr, 4, 2), cidrsubnet(var.backend_cidr, 4, 4)]
+  blue_cidr_blocks = [cidrsubnet(var.blue_cidr, 4, 0), cidrsubnet(var.blue_cidr, 4, 2), cidrsubnet(var.blue_cidr, 4, 4)]
+  green_cidr_blocks  = [cidrsubnet(var.green_cidr, 4, 0), cidrsubnet(var.green_cidr, 4, 2), cidrsubnet(var.green_cidr, 4, 4)]
 }
 
 
@@ -69,9 +69,9 @@ module "bastion" {
   ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
   bastion_cidr             = var.bastion_cidr
   ssh_source_cidr_blocks   = local.bastion_ingress_cidr
-  destination_cidr_blocks  = [var.frontend_cidr, var.backend_cidr]
-  destination_sgs          = [module.frontend.security_group_id, module.backend.security_group_id]
-  # destination_sg          = [module.frontend.security_group_id, module.backend.security_group_id]
+  destination_cidr_blocks  = [var.blue_cidr, var.green_cidr]
+  destination_sgs          = [module.blue.security_group_id, module.green.security_group_id]
+  # destination_sg          = [module.blue.security_group_id, module.green.security_group_id]
   # vsi_profile             = "cx2-2x4"
   # image_name              = "ibm-centos-8-3-minimal-amd64-3"
   ssh_key_id = data.ibm_is_ssh_key.sshkey.id
@@ -79,37 +79,37 @@ module "bastion" {
 }
 
 
-module "frontend" {
-  source                   = "./frontendmodule"
+module "blue" {
+  source                   = "./bluemodule"
   ibm_region               = var.ibm_region
   unique_id                = var.vpc_name
   ibm_is_vpc_id            = module.vpc.vpc_id
   ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
-  frontend_count           = local.frontend_count
+  blue_count           = local.blue_count
   profile                  = var.profile
   ibm_is_image_id          = data.ibm_is_image.os.id
   ibm_is_ssh_key_id        = data.ibm_is_ssh_key.sshkey.id
-  subnet_ids               = module.vpc.frontend_subnet_ids
+  subnet_ids               = module.vpc.blue_subnet_ids
   bastion_remote_sg_id     = module.bastion.security_group_id
   bastion_subnet_CIDR      = var.bastion_cidr
   pub_repo_egress_cidr     = local.pub_repo_egress_cidr
-  app_backend_sg_id        = module.backend.security_group_id
+  app_green_sg_id        = module.green.security_group_id
 }
 
-module "backend" {
-  source                   = "./backendmodule"
+module "green" {
+  source                   = "./greenmodule"
   ibm_region               = var.ibm_region
   unique_id                = var.vpc_name
   ibm_is_vpc_id            = module.vpc.vpc_id
   ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
-  backend_count            = local.backend_count
+  green_count            = local.green_count
   profile                  = var.profile
   ibm_is_image_id          = data.ibm_is_image.os.id
   ibm_is_ssh_key_id        = data.ibm_is_ssh_key.sshkey.id
-  subnet_ids               = module.vpc.backend_subnet_ids
+  subnet_ids               = module.vpc.green_subnet_ids
   bastion_remote_sg_id     = module.bastion.security_group_id
   bastion_subnet_CIDR      = var.bastion_cidr
-  app_frontend_sg_id       = module.frontend.security_group_id
+  app_blue_sg_id       = module.blue.security_group_id
   pub_repo_egress_cidr     = local.pub_repo_egress_cidr
 }
 
@@ -118,5 +118,5 @@ module "accesscheck" {
   ssh_accesscheck = var.ssh_accesscheck
   ssh_private_key = var.ssh_private_key
   bastion_host    = module.bastion.bastion_ip_addresses[0]
-  target_hosts    = concat(module.frontend.primary_ipv4_address, module.backend.primary_ipv4_address)
+  target_hosts    = concat(module.blue.primary_ipv4_address, module.green.primary_ipv4_address)
 }

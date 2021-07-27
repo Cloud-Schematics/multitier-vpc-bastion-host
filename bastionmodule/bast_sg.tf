@@ -22,9 +22,9 @@ locals {
 
   # base rules for maintenance repo's, DNS 
   sg_baserules = [
-    ["outbound", "161.26.0.0/16", "udp", 53, 53],
-    ["outbound", "161.26.0.0/16", "tcp", 80, 80],
-    ["outbound", "161.26.0.0/16", "tcp", 443, 443],
+    ["outbound", "0.0.0.0/0", "udp", 53, 53],
+    ["outbound", "0.0.0.0/0", "tcp", 80, 80],
+    ["outbound", "0.0.0.0/0", "tcp", 443, 443],
   ]
 
   sg_sourcerules = [

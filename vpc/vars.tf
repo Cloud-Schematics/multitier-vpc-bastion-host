@@ -25,12 +25,12 @@ variable "unique_id" {
 }
 
 
-variable "frontend_count" {
+variable "blue_count" {
   description = "number of front end zones"
   default     = 1
 }
 
-variable "backend_count" {
+variable "green_count" {
   description = "number of back end zones"
   default     = 1
 }
@@ -39,10 +39,10 @@ variable "backend_count" {
 # Network variables
 ##############################################################################
 
-variable "frontend_cidr_blocks" {
+variable "blue_cidr_blocks" {
 }
 
-variable "backend_cidr_blocks" {
+variable "green_cidr_blocks" {
 }
 ##############################################################################
 

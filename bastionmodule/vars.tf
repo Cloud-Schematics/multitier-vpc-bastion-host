@@ -67,7 +67,7 @@ variable "ssh_source_cidr_blocks" {
   default     = []
 }
 
-# remote subnets bastion will egress to (frontend, backend)
+# remote subnets bastion will egress to (blue, green)
 # To limit total number of rules in ACL to under 25, use single CIDR range across all zones per SG 
 # CIDR per zone exceeds number of allowed ACL rules
 variable "destination_cidr_blocks" {
@@ -75,7 +75,7 @@ variable "destination_cidr_blocks" {
   default     = []
 }
 
-# remote security groups bastion will egress to (frontend, backend)
+# remote security groups bastion will egress to (blue, green)
 variable "destination_sgs" {
   description = "Destination Security Groups in VPC"
   default     = []

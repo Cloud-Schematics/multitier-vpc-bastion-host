@@ -30,7 +30,7 @@ variable "resource_group_name" {
 # unique name for the VPC in the account 
 variable "vpc_name" {
   description = "Name of vpc"
-  default     = "ssh-bastion-host"
+  default     = "vsi-bastion-host"
 }
 
 ##############################################################################
@@ -55,20 +55,20 @@ locals {
 
 # Predefine subnets for all app tiers for use with `ibm_is_address_prefix`. Single tier CIDR used for NACLs  
 # Each app tier uses: 
-# frontend_cidr_blocks = [cidrsubnet(var.frontend_cidr, 4, 0), cidrsubnet(var.frontend_cidr, 4, 2), cidrsubnet(var.frontend_cidr, 4, 4)]
+# blue_cidr_blocks = [cidrsubnet(var.blue_cidr, 4, 0), cidrsubnet(var.blue_cidr, 4, 2), cidrsubnet(var.blue_cidr, 4, 4)]
 # to create individual zone subnets for use with `ibm_is_address_prefix`
 variable "bastion_cidr" {
   description = "Complete CIDR range across all three zones for bastion host subnets"
   default     = "172.22.192.0/20"
 }
 
-variable "frontend_cidr" {
-  description = "Complete CIDR range across all three zones for frontend subnets"
+variable "blue_cidr" {
+  description = "Complete CIDR range across all three zones for blue subnets"
   default     = "172.16.0.0/20"
 }
 
-variable "backend_cidr" {
-  description = "Complete CIDR range across all three zones for backend subnets"
+variable "green_cidr" {
+  description = "Complete CIDR range across all three zones for green subnets"
   default     = "172.17.0.0/20"
 }
 
@@ -77,7 +77,7 @@ variable "backend_cidr" {
 
 # VSI profile
 variable "profile" {
-  description = "Profile for VSIs deployed in frontend and backend"
+  description = "Profile for VSIs deployed in blue and green"
   default     = "cx2-2x4"
 }
 
