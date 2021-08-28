@@ -35,7 +35,7 @@ variable "backend_count" {
   default     = 1
 }
 
-variable "datgov_count" {
+variable "datagov_count" {
   description = "number of data governance zones"
   default     = 1
 }
@@ -50,7 +50,7 @@ variable "frontend_cidr_blocks" {
 variable "backend_cidr_blocks" {
 }
 
-variable "datgov_cidr_blocks" {
+variable "datagov_cidr_blocks" {
 }
 ##############################################################################
 

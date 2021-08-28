@@ -50,12 +50,12 @@ resource "ibm_is_vpc_address_prefix" "backend_subnet_prefix" {
   cidr  = var.backend_cidr_blocks[count.index]
 }
 
-resource "ibm_is_vpc_address_prefix" "datgov_subnet_prefix" {
-  count = var.datgov_count
-  name  = "${var.unique_id}-datgov-prefix-zone-${count.index + 1}"
+resource "ibm_is_vpc_address_prefix" "datagov_subnet_prefix" {
+  count = var.datagov_count
+  name  = "${var.unique_id}-datagov-prefix-zone-${count.index + 1}"
   zone  = "${var.ibm_region}-${count.index % 3 + 1}"
   vpc   = ibm_is_vpc.vpc.id
-  cidr  = var.datgov_cidr_blocks[count.index]
+  cidr  = var.datagov_cidr_blocks[count.index]
 }
 
 ##############################################################################
@@ -91,15 +91,15 @@ resource "ibm_is_subnet" "backend_subnet" {
   depends_on     = [ibm_is_vpc_address_prefix.backend_subnet_prefix]
 }
 
-resource "ibm_is_subnet" "datgov_subnet" {
-  count           = var.datgov_count
-  name            = "${var.unique_id}-datgov-subnet-${count.index + 1}"
+resource "ibm_is_subnet" "datagov_subnet" {
+  count           = var.datagov_count
+  name            = "${var.unique_id}-datagov-subnet-${count.index + 1}"
   vpc             = ibm_is_vpc.vpc.id
   zone            = "${var.ibm_region}-${count.index % 3 + 1}"
-  ipv4_cidr_block = var.datgov_cidr_blocks[count.index]
+  ipv4_cidr_block = var.datagov_cidr_blocks[count.index]
   #network_acl     = "${ibm_is_network_acl.multizone_acl.id}"
   public_gateway = ibm_is_public_gateway.repo_gateway[count.index].id
-  depends_on     = [ibm_is_vpc_address_prefix.datgov_subnet_prefix]
+  depends_on     = [ibm_is_vpc_address_prefix.datagov_subnet_prefix]
 }
 
 

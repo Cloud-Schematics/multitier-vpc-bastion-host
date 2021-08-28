@@ -45,7 +45,7 @@ variable "bastion_subnet_CIDR" {
 variable "pub_repo_egress_cidr" {
 }
 
-variable "datgov_count" {
+variable "datagov_count" {
   description = "number of data governance zones"
   default     = 1
 }

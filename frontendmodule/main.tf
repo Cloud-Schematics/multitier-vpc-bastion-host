@@ -101,6 +101,7 @@ locals {
 
 
   sg_rules = [
+    ["outbound", var.app_datagov_sg_id, "tcp", 9300, 9300],
     ["outbound", var.app_backend_sg_id, "tcp", 27017, 27017],
     ["inbound", var.bastion_remote_sg_id, "tcp", 22, 22],
     ["outbound", "161.26.0.0/24", "tcp", 443, 443],

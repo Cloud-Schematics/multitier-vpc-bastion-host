@@ -15,8 +15,8 @@ output "backend_server_host_ip_addresses" {
   value = [module.backend.primary_ipv4_address]
 }
 
-output "datgov_server_host_ip_addresses" {
-  value = [module.datgov.primary_ipv4_address]
+output "datagov_server_host_ip_addresses" {
+  value = [module.datagov.primary_ipv4_address]
 }
 
 output "app_dns_hostname" {

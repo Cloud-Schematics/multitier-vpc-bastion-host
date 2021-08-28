@@ -6,8 +6,8 @@ output "frontend_subnet_ids" {
   value = ibm_is_subnet.frontend_subnet.*.id
 }
 
-output "datgov_subnet_ids" {
-  value = ibm_is_subnet.datgov_subnet.*.id
+output "datagov_subnet_ids" {
+  value = ibm_is_subnet.datagov_subnet.*.id
 }
 
 output "backend_subnet_ids" {

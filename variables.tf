@@ -43,7 +43,7 @@ variable "vpc_name" {
 # from remove-exec or Redhat Ansible running under Schematics 
 
 variable "ssh_source_cidr_override" {
-  type        = list
+  type        = list(any)
   description = "Override CIDR range that is allowed to ssh to the bastion"
   default     = ["0.0.0.0/0"]
 }
@@ -72,7 +72,7 @@ variable "backend_cidr" {
   default     = "172.17.0.0/20"
 }
 
-variable "datgov_cidr" {
+variable "datagov_cidr" {
   description = "Complete CIDR range across all three zones for data gov subnets"
   default     = "172.18.0.0/20"
 }
