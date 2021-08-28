@@ -72,12 +72,17 @@ variable "backend_cidr" {
   default     = "172.17.0.0/20"
 }
 
+variable "datgov_cidr" {
+  description = "Complete CIDR range across all three zones for data gov subnets"
+  default     = "172.18.0.0/20"
+}
+
 
 ##############################################################################
 
 # VSI profile
 variable "profile" {
-  description = "Profile for VSIs deployed in frontend and backend"
+  description = "Profile for VSIs deployed in frontend, data governance and backend"
   default     = "cx2-2x4"
 }
 

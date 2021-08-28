@@ -2,7 +2,7 @@
 provider "ibm" {
   region = var.ibm_region
   #ibmcloud_api_key = var.ibmcloud_api_key
-  generation = local.generation
+  # generation = local.generation
   # version    = "~> 1.4"
 }
 
@@ -11,9 +11,10 @@ data "ibm_resource_group" "all_rg" {
 }
 
 locals {
-  generation     = 2
+  # generation     = 2
   frontend_count = 2
   backend_count  = 1
+  datgov_count   = 1
 }
 
 
@@ -43,18 +44,21 @@ module "vpc" {
   source               = "./vpc"
   ibm_region           = var.ibm_region
   resource_group_name  = var.resource_group_name
-  generation           = local.generation
+  # generation           = local.generation
   unique_id            = var.vpc_name
   frontend_count       = local.frontend_count
   frontend_cidr_blocks = local.frontend_cidr_blocks
   backend_count        = local.backend_count
   backend_cidr_blocks  = local.backend_cidr_blocks
+  datgov_count         = local.datgov_count
+  datgov_cidr_blocks   = local.datgov_cidr_blocks
 }
 
 locals {
   # bastion_cidr_blocks  = [cidrsubnet(var.bastion_cidr, 4, 0), cidrsubnet(var.bastion_cidr, 4, 2), cidrsubnet(var.bastion_cidr, 4, 4)]
   frontend_cidr_blocks = [cidrsubnet(var.frontend_cidr, 4, 0), cidrsubnet(var.frontend_cidr, 4, 2), cidrsubnet(var.frontend_cidr, 4, 4)]
   backend_cidr_blocks  = [cidrsubnet(var.backend_cidr, 4, 0), cidrsubnet(var.backend_cidr, 4, 2), cidrsubnet(var.backend_cidr, 4, 4)]
+  datgov_cidr_blocks   = [cidrsubnet(var.datgov_cidr, 4, 0), cidrsubnet(var.datgov_cidr, 4, 2), cidrsubnet(var.datgov_cidr, 4, 4)]
 }
 
 
@@ -77,7 +81,6 @@ module "bastion" {
 
 }
 
-
 module "frontend" {
   source                   = "./frontendmodule"
   ibm_region               = var.ibm_region
@@ -91,8 +94,9 @@ module "frontend" {
   subnet_ids               = module.vpc.frontend_subnet_ids
   bastion_remote_sg_id     = module.bastion.security_group_id
   bastion_subnet_CIDR      = var.bastion_cidr
-  pub_repo_egress_cidr     = local.pub_repo_egress_cidr
   app_backend_sg_id        = module.backend.security_group_id
+  app_datgov_sg_id         = module.datgov.security_group_id
+  pub_repo_egress_cidr     = local.pub_repo_egress_cidr
 }
 
 module "backend" {
@@ -109,6 +113,25 @@ module "backend" {
   bastion_remote_sg_id     = module.bastion.security_group_id
   bastion_subnet_CIDR      = var.bastion_cidr
   app_frontend_sg_id       = module.frontend.security_group_id
+  app_datgov_sg_id         = module.datgov.security_group_id
+  pub_repo_egress_cidr     = local.pub_repo_egress_cidr
+}
+
+module "datgov" {
+  source                   = "./datgovmodule"
+  ibm_region               = var.ibm_region
+  unique_id                = var.vpc_name
+  ibm_is_vpc_id            = module.vpc.vpc_id
+  ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
+  datgov_count             = local.datgov_count
+  profile                  = var.profile
+  ibm_is_image_id          = data.ibm_is_image.os.id
+  ibm_is_ssh_key_id        = data.ibm_is_ssh_key.sshkey.id
+  subnet_ids               = module.vpc.datgov_subnet_ids
+  bastion_remote_sg_id     = module.bastion.security_group_id
+  bastion_subnet_CIDR      = var.bastion_cidr
+  app_frontend_sg_id       = module.frontend.security_group_id
+  app_backend_sg_id        = module.backend.security_group_id
   pub_repo_egress_cidr     = local.pub_repo_egress_cidr
 }
 
@@ -117,5 +140,5 @@ module "accesscheck" {
   ssh_accesscheck = var.ssh_accesscheck
   ssh_private_key = var.ssh_private_key
   bastion_host    = module.bastion.bastion_ip_addresses[0]
-  target_hosts    = concat(module.frontend.primary_ipv4_address, module.backend.primary_ipv4_address)
+  target_hosts    = concat(module.frontend.primary_ipv4_address, module.backend.primary_ipv4_address, module.datgov.primary_ipv4_address)
 }
