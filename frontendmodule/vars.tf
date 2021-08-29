@@ -41,6 +41,9 @@ variable "bastion_subnet_CIDR" {
 variable "app_backend_sg_id" {
 }
 
+variable "app_datagov_sg_id" {
+}
+
 # Allowable CIDRs of public repos from which Ansible can deploy code
 variable "pub_repo_egress_cidr" {
 }

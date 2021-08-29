@@ -33,6 +33,9 @@ variable "subnet_ids" {
 variable "app_frontend_sg_id" {
 }
 
+variable "app_datagov_sg_id" {
+}
+
 # bastion sg requiring access to backend security group
 variable "bastion_remote_sg_id" {
 }

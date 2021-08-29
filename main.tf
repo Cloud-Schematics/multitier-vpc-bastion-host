@@ -72,8 +72,8 @@ module "bastion" {
   ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
   bastion_cidr             = var.bastion_cidr
   ssh_source_cidr_blocks   = local.bastion_ingress_cidr
-  destination_cidr_blocks  = [var.frontend_cidr, var.backend_cidr]
-  destination_sgs          = [module.frontend.security_group_id, module.backend.security_group_id]
+  destination_cidr_blocks  = [var.frontend_cidr, var.backend_cidr, var.datagov_cidr]
+  destination_sgs          = [module.frontend.security_group_id, module.backend.security_group_id, module.datagov.security_group_id]
   # destination_sg          = [module.frontend.security_group_id, module.backend.security_group_id]
   # vsi_profile             = "cx2-2x4"
   # image_name              = "ibm-centos-7-6-minimal-amd64-1"
