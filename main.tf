@@ -17,7 +17,6 @@ locals {
   datagov_count  = 1
 }
 
-
 ##################################################################################################
 #  Select CIDRs allowed to access bastion host  
 #  When running under Schematics allowed ingress CIDRs are set to only allow access from Schematics  
@@ -64,7 +63,7 @@ locals {
 
 # Create single zone bastion
 module "bastion" {
-  source                   = "./bastionmodule"
+  source                   = "./modules/bastion"
   ibm_region               = var.ibm_region
   bastion_count            = 1
   unique_id                = var.vpc_name
@@ -74,15 +73,12 @@ module "bastion" {
   ssh_source_cidr_blocks   = local.bastion_ingress_cidr
   destination_cidr_blocks  = [var.frontend_cidr, var.backend_cidr, var.datagov_cidr]
   destination_sgs          = [module.frontend.security_group_id, module.backend.security_group_id, module.datagov.security_group_id]
-  # destination_sg          = [module.frontend.security_group_id, module.backend.security_group_id]
-  # vsi_profile             = "cx2-2x4"
-  # image_name              = "ibm-centos-7-6-minimal-amd64-1"
   ssh_key_id = data.ibm_is_ssh_key.sshkey.id
 
 }
 
 module "frontend" {
-  source                   = "./frontendmodule"
+  source                   = "./modules/frontend"
   ibm_region               = var.ibm_region
   unique_id                = var.vpc_name
   ibm_is_vpc_id            = module.vpc.vpc_id
@@ -100,7 +96,7 @@ module "frontend" {
 }
 
 module "backend" {
-  source                   = "./backendmodule"
+  source                   = "./modules/backend"
   ibm_region               = var.ibm_region
   unique_id                = var.vpc_name
   ibm_is_vpc_id            = module.vpc.vpc_id
@@ -118,7 +114,7 @@ module "backend" {
 }
 
 module "datagov" {
-  source                   = "./datagovmodule"
+  source                   = "./modules/datagovernance"
   ibm_region               = var.ibm_region
   unique_id                = var.vpc_name
   ibm_is_vpc_id            = module.vpc.vpc_id
@@ -136,7 +132,7 @@ module "datagov" {
 }
 
 module "accesscheck" {
-  source          = "./accesscheck"
+  source          = "./modules/accesscheck"
   ssh_accesscheck = var.ssh_accesscheck
   ssh_private_key = var.ssh_private_key
   bastion_host    = module.bastion.bastion_ip_addresses[0]

@@ -24,9 +24,6 @@ resource "ibm_is_vpc" "vpc" {
 
 
 
-
-
-
 ##############################################################################
 # Prefixes and subnets for zone 1
 ##############################################################################
@@ -63,9 +60,6 @@ resource "ibm_is_vpc_address_prefix" "datagov_subnet_prefix" {
 ##############################################################################
 # Create Subnets
 ##############################################################################
-
-
-
 
 # Increase count to create subnets in all zones
 resource "ibm_is_subnet" "frontend_subnet" {
@@ -104,7 +98,6 @@ resource "ibm_is_subnet" "datagov_subnet" {
 
 
 
-
 # Increase count to create gateways in all zones
 resource "ibm_is_public_gateway" "repo_gateway" {
   count = var.frontend_count
@@ -118,12 +111,27 @@ resource "ibm_is_public_gateway" "repo_gateway" {
   }
 }
 
-
-
-
-
 #############################################################################
 
 
 
 
+
+
+#############################################################################
+# Enable Flow logs
+#############################################################################
+
+module "vpc_flow_log" {
+  source                   = "..modules/flowlogs"
+  unique_id                = ibm_is_vpc.vpc.name
+  ibm_region               = var.ibm_region
+  ibm_is_vpc_id            = ibm_is_vpc.vpc.id
+  ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
+  ibm_is_res_target_id     = ibm_is_vpc.vpc.id
+
+}
+
+
+
+#############################################################################

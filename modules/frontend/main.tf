@@ -86,8 +86,6 @@ resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
 
 
 
-
-
 # this is the SG applied to the frontend instances
 resource "ibm_is_security_group" "frontend" {
   name           = "${var.unique_id}-frontend-sg"

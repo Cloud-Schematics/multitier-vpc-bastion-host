@@ -40,7 +40,7 @@ resource "ibm_is_instance" "datagov-server" {
 
 
 # resource "ibm_is_lb" "webapptier-lb" {
-#   name    = "backapptier"
+#   name    = "datagovtier"
 #   type    = "private"
 #   subnets = toset(var.subnet_ids)
 # resource_group = var.ibm_is_resource_group_id
