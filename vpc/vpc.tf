@@ -6,6 +6,7 @@
 # Separately setup up any required load balancers, listeners, pools and members
 ##############################################################################
 
+
 ##############################################################################
 # Create a VPC
 ##############################################################################
@@ -20,9 +21,6 @@ resource "ibm_is_vpc" "vpc" {
 }
 
 ##############################################################################
-
-
-
 
 
 
@@ -49,14 +47,19 @@ resource "ibm_is_vpc_address_prefix" "backend_subnet_prefix" {
   cidr  = var.backend_cidr_blocks[count.index]
 }
 
+resource "ibm_is_vpc_address_prefix" "datagov_subnet_prefix" {
+  count = var.datagov_count
+  name  = "${var.unique_id}-datagov-prefix-zone-${count.index + 1}"
+  zone  = "${var.ibm_region}-${count.index % 3 + 1}"
+  vpc   = ibm_is_vpc.vpc.id
+  cidr  = var.datagov_cidr_blocks[count.index]
+}
+
 ##############################################################################
 
 ##############################################################################
 # Create Subnets
 ##############################################################################
-
-
-
 
 # Increase count to create subnets in all zones
 resource "ibm_is_subnet" "frontend_subnet" {
@@ -82,7 +85,16 @@ resource "ibm_is_subnet" "backend_subnet" {
   depends_on     = [ibm_is_vpc_address_prefix.backend_subnet_prefix]
 }
 
-
+resource "ibm_is_subnet" "datagov_subnet" {
+  count           = var.datagov_count
+  name            = "${var.unique_id}-datagov-subnet-${count.index + 1}"
+  vpc             = ibm_is_vpc.vpc.id
+  zone            = "${var.ibm_region}-${count.index % 3 + 1}"
+  ipv4_cidr_block = var.datagov_cidr_blocks[count.index]
+  #network_acl     = "${ibm_is_network_acl.multizone_acl.id}"
+  public_gateway = ibm_is_public_gateway.repo_gateway[count.index].id
+  depends_on     = [ibm_is_vpc_address_prefix.datagov_subnet_prefix]
+}
 
 
 
@@ -99,12 +111,27 @@ resource "ibm_is_public_gateway" "repo_gateway" {
   }
 }
 
-
-
-
-
 #############################################################################
 
 
 
 
+
+
+#############################################################################
+# Enable Flow logs
+#############################################################################
+
+module "vpc_flow_log" {
+  source                   = "..modules/flowlogs"
+  unique_id                = ibm_is_vpc.vpc.name
+  ibm_region               = var.ibm_region
+  ibm_is_vpc_id            = ibm_is_vpc.vpc.id
+  ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
+  ibm_is_res_target_id     = ibm_is_vpc.vpc.id
+
+}
+
+
+
+#############################################################################

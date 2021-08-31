@@ -1,27 +1,27 @@
 ######################################################################################
-# Sample module to deploy a 'backend' webserver VSI and security group  
+# Sample module to deploy a 'data governance' webserver VSI and security group  
 # No NACL is defined. As no floating (public) IPs are defined, the Security Group 
 # configuration by itself is considered sufficient to protect access to the VSIs. 
 # Subnet is created in VPC module.
 #
 # Redhat Ansible usage is enabled by the addition of VSI tags. All Ansible related VSI 
 # tags are prefixed with "ans_group:" followed by the group name.   '
-# tags = ["ans_group:backend"]'  
+# tags = ["ans_group:datagov"]'  
 # Correct specification of tags is essential for operation of the Ansible dynamic inventory
 # script used to pass host information to Ansible. The tags here should match the roles
 # defined in the site.yml playbook file. 
 #######################################################################################
 
 
-resource "ibm_is_instance" "backend-server" {
-  count   = var.backend_count
-  name    = "${var.unique_id}-backend-vsi-${count.index + 1}"
+resource "ibm_is_instance" "datagov-server" {
+  count   = var.datagov_count
+  name    = "${var.unique_id}-datagov-vsi-${count.index + 1}"
   image   = var.ibm_is_image_id
   profile = var.profile
 
   primary_network_interface {
     subnet          = var.subnet_ids[count.index]
-    security_groups = [ibm_is_security_group.backend.id]
+    security_groups = [ibm_is_security_group.datagov.id]
   }
 
   vpc            = var.ibm_is_vpc_id
@@ -29,7 +29,7 @@ resource "ibm_is_instance" "backend-server" {
   resource_group = var.ibm_is_resource_group_id
   keys           = [var.ibm_is_ssh_key_id]
   user_data      = data.template_cloudinit_config.app_userdata.rendered
-  tags           = ["schematics:group:backend"]
+  tags           = ["schematics:group:datagov"]
 }
 
 
@@ -40,7 +40,7 @@ resource "ibm_is_instance" "backend-server" {
 
 
 # resource "ibm_is_lb" "webapptier-lb" {
-#   name    = "backapptier"
+#   name    = "datagovtier"
 #   type    = "private"
 #   subnets = toset(var.subnet_ids)
 # resource_group = var.ibm_is_resource_group_id
@@ -69,11 +69,11 @@ resource "ibm_is_instance" "backend-server" {
 # }
 
 # resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
-#   count          = var.backend_count
+#   count          = var.datagov_count
 #   lb             = ibm_is_lb.webapptier-lb.id
 #   pool           = element(split("/", ibm_is_lb_pool.webapptier-lb-pool.id), 1)
 #   port           = "8080"
-#   target_address = ibm_is_instance.backend-server[count.index].primary_network_interface[0].primary_ipv4_address
+#   target_address = ibm_is_instance.datagov-server[count.index].primary_network_interface[0].primary_ipv4_address
 #   depends_on     = [ibm_is_lb_pool.webapptier-lb-pool]
 # }
 
@@ -81,9 +81,9 @@ resource "ibm_is_instance" "backend-server" {
 
 
 
-# this is the SG applied to the backend instances
-resource "ibm_is_security_group" "backend" {
-  name           = "${var.unique_id}-backend-sg"
+# this is the SG applied to the data governance instances
+resource "ibm_is_security_group" "datagov" {
+  name           = "${var.unique_id}-datagov-sg"
   vpc            = var.ibm_is_vpc_id
   resource_group = var.ibm_is_resource_group_id
 }
@@ -95,7 +95,9 @@ locals {
 
   sg_rules = [
     ["inbound", var.bastion_remote_sg_id, "tcp", 22, 22],
-    ["inbound", var.app_frontend_sg_id, "tcp", 27017, 27017],
+    ["inbound", var.app_backend_sg_id, "tcp", 9300, 9300],
+    ["inbound", var.app_frontend_sg_id, "tcp", 9300, 9300],
+    ["outbound", var.app_backend_sg_id, "tcp", 27017, 27017],
     ["outbound", "161.26.0.0/24", "tcp", 443, 443],
     ["outbound", "161.26.0.0/24", "tcp", 80, 80],
     ["outbound", "161.26.0.0/24", "udp", 53, 53],
@@ -110,9 +112,9 @@ locals {
 }
 
 
-resource "ibm_is_security_group_rule" "backend_access" {
+resource "ibm_is_security_group_rule" "datagov_access" {
   count     = length(local.sg_mappedrules)
-  group     = ibm_is_security_group.backend.id
+  group     = ibm_is_security_group.datagov.id
   direction = (local.sg_mappedrules[count.index]).direction
   remote    = (local.sg_mappedrules[count.index]).remote
   dynamic "tcp" {
