@@ -13,6 +13,17 @@
 #######################################################################################
 
 
+terraform {
+  required_providers {
+    ibm = {
+      source  = "IBM-Cloud/ibm"
+      version = "~> 1.33.0"
+    }
+  }
+}
+
+
+
 resource "ibm_is_instance" "backend-server" {
   count   = var.backend_count
   name    = "${var.unique_id}-backend-vsi-${count.index + 1}"

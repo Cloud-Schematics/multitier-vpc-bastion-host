@@ -14,10 +14,6 @@ variable "resource_group_name" {
 #   description = "IBM Cloud availability zones"
 # }
 
-variable "generation" {
-  description = "VPC generation"
-  default     = 2
-}
 
 # unique vpc name
 variable "unique_id" {
