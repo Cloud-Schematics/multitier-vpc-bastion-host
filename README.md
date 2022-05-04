@@ -157,7 +157,7 @@ defined in the site.yml playbook file.
     The SSH key is required to access the provisioned VPC virtual server
     instances via the bastion host. After you have created your SSH key,
     make sure to [upload this SSH key to your IBM Cloud
-    account](https://cloud.ibm.com/docs/vpc-on-classic-vsi?topic=vpc-on-classic-vsi-managing-ssh-keys#managing-ssh-keys-with-ibm-cloud-console) in
+    account](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-ssh-keys&interface=ui#managing-ssh-keys-with-ibm-cloud-console) in
     the VPC region and resource group where you want to deploy this
     example
 3.  Create the Schematics workspace:
