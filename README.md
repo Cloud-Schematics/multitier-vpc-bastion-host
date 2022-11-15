@@ -159,7 +159,7 @@ defined in the site.yml playbook file.
     make sure to [upload this SSH key to your IBM Cloud
     account](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-ssh-keys&interface=ui#managing-ssh-keys-with-ibm-cloud-console) in
     the VPC region and resource group where you want to deploy this
-    example
+    example. Record the name given the SSH key in IBM Cloud.  
 3.  Create the Schematics workspace:
    1.  From the IBM Cloud menu
     select [Schematics](https://cloud.ibm.com/schematics/overview).
@@ -218,10 +218,11 @@ IP ranges used by IBM Cloud Schematics. Any access from IP addresses
 outside these ranges will be denied.
 
 To validate Schematics has successfully provisioned SSH access, the template can be run with the
-input variable `ssh_accesscheck = true`. This uses Terraform
+input variable `ssh_accesscheck = true` and specifying a value for the `ssh_private_key`. This uses Terraform
 remote-exec to SSH onto the deployed VSIs and return the host name. If Schematics cannot
 access the VSIs the Apply will fail with a `timeout` message.  
 
+To retrieve the private SSH key generated for the VPC workspace. Open a terminal session to print to the screen the generated private key. Copy the output of the cat command, `cat ~/.ssh/<ssh_key_name>.pub`. Paste the copied ssh key output into the workspace ssh_private_key variable and set the sensitive flag.
 
 To validate that access is denied from other IP addresses, the following
 SSH command can be used from a local workstation. Copy and paste the
