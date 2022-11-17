@@ -21,12 +21,12 @@ security group configuration, please see the IBM Developer article
 ![Multi-tier VPC with bastion host](images/multitiervpc.png)
 
 The example deploys a three tier application environment, with a public facing
-load balancer, a frontend app tier for application webservers and a backend tier For
+load balancer, a frontend app tier for application web-servers and a backend tier For
 a database server. The two frontend servers are deployed across multiple MZR zones to
 demonstrate scaling and HA resilience. The backend tier can be optionally provisioned with
 multiple VSIs across zones.
 
-Public gateways and DNS access is configured to support deployment of opensource application
+Public gateways and DNS access is configured to support deployment of open-source application
 packages using Redhat Ansible.  
 
 
@@ -123,7 +123,7 @@ defined in the site.yml playbook file.
 
 | name | description | type | required | default | sensitive |
 | ---------- | -------- | -------------- | ---------- | ----------- | ----------- |
-| ibm_region | Region of deployed VPC | string | |"us-south" |   |
+|  ibm_region | Region of deployed VPC | string | |"us-south" |   |
 |  vpc_name  | Unique VPC name     | string | | "ssh-bastion-host"   |   |
 |  resource_group_name | Name of IBM Cloud Resource Group used for all VPC resources | string | | "Default" |  |
 |  ssh_source_cidr_override |  User specified list of CIDR ranges requiring SSH access. When used with Schematics the default is to allow access only from Schematics, otherwise set to "0.0.0.0/0" | list(string) | | {{Schematics}}  |   |
@@ -154,6 +154,8 @@ defined in the site.yml playbook file.
     create the workspace and deploy resources.
 2.  [Generate an SSH
     key](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys).
+    - Note: Ignore the option to create with a passphase and press `<return>`. Ansible does not directly support SSH keys using passphrases and later stages of this example will fail if a passphase is entered. 
+
     The SSH key is required to access the provisioned VPC virtual server
     instances via the bastion host. After you have created your SSH key,
     make sure to [upload this SSH key to your IBM Cloud
@@ -161,16 +163,17 @@ defined in the site.yml playbook file.
     the VPC region and resource group where you want to deploy this
     example
 3.  Create the Schematics workspace:
-   1.  From the IBM Cloud menu
+   1.  From the IBM Cloud console
     select [Schematics](https://cloud.ibm.com/schematics/overview).
-       - Click Create a workspace.   
-       - Enter a name for your workspace.   
-       - Click Create to create your workspace.
-    2.  On the workspace **Settings** page, enter the URL of this example in
-    the Schematics examples Github repository.
-     - Select the Terraform version: Terraform 1.0 or higher
-     - Click **Save template information**.
-     - In the **Input variables** section, review the default input
+       - Click Create a workspace.  
+       - Enter the URL of this example repo `https://github.com/Cloud-Schematics/multitier-vpc-bastion-host`
+       - Ignore the Git Token field as it is not required for this public repo 
+       - Select the Terraform version: Terraform 1.0 or higher
+    2. Click **Next** to create a draft workspace.
+       - Enter a name for your workspace. 
+       - Select a Resource Group (usually default)  
+       - Click **Create** to create the workspace.
+    3. In the **Input variables** section, review the default input
         variables and provide alternatives if desired. The only
         mandatory parameter is the name given to the SSH key that you
         uploaded to your IBM Cloud account.
@@ -231,7 +234,7 @@ containing the private SSH key.
 
 ```
 ssh -i ~/.ssh/<ansible> -o ProxyCommand="ssh -i ~/.ssh/<ansible>
--W %h:%p root@52.116.132.26" root@172.16.0.5
+-W %h:%p root@<bastion_ip>" root@<vsi_ip>
 ```
 
 The command will return:
