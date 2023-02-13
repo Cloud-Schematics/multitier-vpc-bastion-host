@@ -39,7 +39,7 @@ locals {
   region = lookup(data.external.env.result, "TF_VAR_SCHEMATICSLOCATION", "")
   geo    = substr(local.region, 0, 2)
   schematics_ssh_access_map = {
-    us = ["169.44.0.0/14", "169.60.0.0/14"],
+    us = ["169.32.0.0/11", "150.238.0.0/16"],
     eu = ["158.175.0.0/16", "158.176.0.0/15", "141.125.75.80/28", "161.156.139.192/28", "149.81.103.128/28"],
 
   }
