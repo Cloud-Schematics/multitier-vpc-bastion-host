@@ -73,6 +73,7 @@ module "bastion" {
   bastion_count            = 1
   unique_id                = var.vpc_name
   ibm_is_vpc_id            = module.vpc.vpc_id
+  ibm_is_image_id          = data.ibm_is_image.os.id
   ibm_is_resource_group_id = data.ibm_resource_group.all_rg.id
   bastion_cidr             = var.bastion_cidr
   ssh_source_cidr_blocks   = local.bastion_ingress_cidr
