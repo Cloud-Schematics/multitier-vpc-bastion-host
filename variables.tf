@@ -78,7 +78,7 @@ variable "profile" {
 # image names can be determined with the cli command `ibmcloud is images`
 variable "image_name" {
   description = "OS image for VSI deployments. Only tested with Centos"
-  default     = "ibm-centos-7-6-minimal-amd64-1"
+  default     = "ibm-centos-7-9-minimal-amd64-10"
 }
 
 data "ibm_is_image" "os" {
